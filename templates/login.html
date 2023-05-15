@@ -1,0 +1,15 @@
+{% extends 'layout.html' %}
+{% block content %}
+<form action="/create_account" method="post">
+    <br><br>
+    <label for="username">Whats your username?</label>
+    <input type="username" id="username" name="username" required>
+    <br><br>
+    <label for="password">Whats your password?</label>
+    <input type="password" id="password" name="password" required>
+    <br><br>
+    <button type="submit">Create account</button>
+    <button type="submit">Login</button>
+</form>
+
+{% endblock %}

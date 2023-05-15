@@ -1,0 +1,10 @@
+{% extends 'layout.html' %}
+{% block content %}
+<form action="/post_idea">
+    <h2><label for="createpost">Create a post</label></h2>
+    <textarea required name="createpost" id="createpost" cols="30" rows="5" maxlength="120"></textarea>
+    <br><br>
+    <button>Submit</button>
+</form>
+
+{% endblock %}

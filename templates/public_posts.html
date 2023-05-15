@@ -1,0 +1,21 @@
+{% extends 'layout.html' %}
+{% block content %}
+
+{% for results in results %}
+
+<h2>
+{{ results[0] }}
+</h2>
+
+<p>
+{{ results[1] }}
+</p>
+
+<h5>
+{{results[2][0]}}{{results[2][1]}}/{{results[2][2]}}{{results[2][3]}}/{{results[2][4]}}{{results[2][5]}}{{results[2][6]}}{{results[2][7]}}
+</h5>
+    
+
+{% endfor %}    
+
+{% endblock %}
