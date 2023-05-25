@@ -1,7 +1,8 @@
 {% extends 'layout.html' %}
 {% block content %}
+<br><br> <!-- combine these somehow -->
+
 <form action="/create_account" method="post">
-    <br><br>
     <label for="username">Whats your username?</label>
     <input type="username" id="username" name="username" required>
     <br><br>
@@ -9,7 +10,20 @@
     <input type="password" id="password" name="password" required>
     <br><br>
     <button type="submit">Create account</button>
+</form>
+
+<br><br>
+
+<form action="/login" method="post">
+    <label for="username">Whats your username?</label>
+    <input type="username" id="username" name="username" required>
+    <br><br>
+    <label for="password">Whats your password?</label>
+    <input type="password" id="password" name="password" required>
+    <br><br>
     <button type="submit">Login</button>
 </form>
+
+{{ msg }}
 
 {% endblock %}
