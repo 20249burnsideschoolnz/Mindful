@@ -1,27 +1,16 @@
 {% extends 'layout.html' %}
 {% block content %}
-<br><br> <!-- combine these somehow -->
-
-<form action="/create_account" method="post">
-    <label for="username">Whats your username?</label>
-    <input type="username" id="username" name="username" required>
-    <br><br>
-    <label for="password">Whats your password?</label>
-    <input type="password" id="password" name="password" required>
-    <br><br>
-    <button type="submit">Create account</button>
-</form>
-
 <br><br>
 
-<form action="/login" method="post">
+<form action="/create_or_login" method="post">
     <label for="username">Whats your username?</label>
-    <input type="username" id="username" name="username" required>
+    <input type="username" name="username" required>
     <br><br>
     <label for="password">Whats your password?</label>
-    <input type="password" id="password" name="password" required>
+    <input type="password" name="password" required>
     <br><br>
-    <button type="submit">Login</button>
+    <button type="submit" name="create_or_login" value="create_account">Create account</button>
+    <button type="submit" name="create_or_login" value="login">Login</button>
 </form>
 
 {{ msg }}

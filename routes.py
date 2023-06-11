@@ -52,38 +52,40 @@ def public_posts():
 def loginpage(): #If the given credentials are found in the user table then the user can login with those credentials. Loop through username column and password column until a legitimate combination has been found.   
     return render_template("loginpage.html")
 
-@app.post('/login')
-def login():
-    conn = sqlite3.connect("mindful.db")
-    cur = conn.cursor()
-    sql = 'SELECT username, password FROM User WHERE username = (?) AND password = (?)'
-    cur.execute(sql, (request.form['username'], request.form['password']))
-    results = cur.fetchall()
-    print(results)
-    if not results:
-         print("doesnt exist")
-         msg = "Incorrect username or password"
-         return render_template("loginpage.html", msg = msg)
-    else:
-        return redirect('/')
-
-@app.post('/create_account') #First you need to check if a username already exists within the database.
-def create_account():
-    conn = sqlite3.connect("mindful.db")
-    cur = conn.cursor()
-    sql = 'SELECT username FROM User WHERE username = (?)' #Database will return a username if it exists
-    cur.execute(sql, (request.form['username'],))
-    username = cur.fetchone() 
-    if username == None: #If it doesnt exist then it will insert it into the database and the username session is filled.
-        sql = 'INSERT INTO User (username, password) VALUES (?,?)'
+@app.route('/create_or_login', methods=['POST'])
+def create_or_login():
+    create_or_login = request.form['create_or_login']
+    if create_or_login == "create_account":
+        conn = sqlite3.connect("mindful.db")
+        cur = conn.cursor()
+        sql = 'SELECT username FROM User WHERE username = (?)' #Database will return a username if it exists
+        cur.execute(sql, (request.form['username'],))
+        username = cur.fetchone() 
+        if username == None: #If it doesnt exist then it will insert it into the database and the username session is filled.
+            sql = 'INSERT INTO User (username, password) VALUES (?,?)'
+            cur.execute(sql, (request.form['username'], request.form['password']))
+            conn.commit()
+            session["username"] = request.form['username']
+            return redirect("/")
+        else:
+            msg = "Sorry, username has been taken" #tells the user that the username is already taken 
+            return render_template("loginpage.html", msg = msg)
+    if create_or_login == "login":
+        conn = sqlite3.connect("mindful.db")
+        cur = conn.cursor()
+        sql = 'SELECT username, password FROM User WHERE username = (?) AND password = (?)'
         cur.execute(sql, (request.form['username'], request.form['password']))
-        conn.commit()
-        session["username"] = request.form['username']
-        return redirect("/")
-    else:
-        msg = "Sorry, username has been taken" #tells the user that the username is already taken 
-        return render_template("loginpage.html", msg = msg)
-    
+        results = cur.fetchall()
+        print(results)
+        if not results:
+            print("doesnt exist")
+            msg = "Incorrect username or password"
+            return render_template("loginpage.html", msg = msg)
+        else:
+            session["username"] = request.form['username']
+            return redirect('/')
 
 if __name__ == "__main__":
     app.run(debug = True)
+
+
