@@ -19,31 +19,42 @@ def my_posts():
         print("logged in")
         conn = sqlite3.connect("mindful.db")
         cur = conn.cursor()
-        sql = 'SELECT * FROM Gratitude_idea WHERE username = ?'
+        sql = 'SELECT * FROM Gratitude_idea WHERE username = ? ORDER BY date DESC'
         cur.execute(sql, (session['username'],))
         results = cur.fetchall()
         return render_template("my_posts.html", results = results)
     else:
         print("not logged in")
-        return redirect("loginpage")
+        return redirect("loginpage")    
 
-     
+@app.route('/admin', methods=['GET','POST'])
+def admin():
+    return render_template("admin.html")
 
 @app.post('/post_idea')
 def post_idea():
     conn = sqlite3.connect("mindful.db")
     cur = conn.cursor()
     sql = 'INSERT INTO Gratitude_idea (username, date, content) VALUES (?,?,?)'
-    current_time = datetime.today().strftime('%Y-%m-%d')
+    current_time = datetime.today().strftime('%d-%m-%Y')
     cur.execute(sql, (session['username'], current_time, request.form['post_idea'])) #Get username from cookie, get date from ?, get content from the form "create post" or "post_idea"
     conn.commit()
     return redirect("my_posts")
+
+@app.post('/like') #Create a feature where you cant keep liking a post with the same account.
+def like():
+    conn = sqlite3.connect("mindful.db")
+    cur = conn.cursor()
+    sql = "UPDATE Gratitude_idea SET like_count = like_count + 1 WHERE id = ?"
+    cur.execute(sql, (request.form['like'],))
+    conn.commit()
+    return redirect("public_posts")
 
 @app.route('/public_posts')
 def public_posts():
     conn = sqlite3.connect("mindful.db")
     cur = conn.cursor()
-    cur.execute('SELECT username, content, date FROM Gratitude_idea ORDER BY date DESC')
+    cur.execute('SELECT username, content, date, id, like_count FROM Gratitude_idea ORDER BY date DESC')
     results = cur.fetchall()
     return render_template("public_posts.html", results = results)
 
@@ -83,9 +94,7 @@ def create_or_login():
             return render_template("loginpage.html", msg = msg)
         else:
             session["username"] = request.form['username']
-            return redirect('/')
+            return redirect('/my_posts')
 
 if __name__ == "__main__":
     app.run(debug = True)
-
-

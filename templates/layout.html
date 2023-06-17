@@ -12,15 +12,20 @@
         {% include "header.html" %}
     </header>
 
-    <nav>
-        {% include "nav.html" %}
-    </nav>
-
-    <main>
-        {% block content %} 
-        
-        {% endblock %}
-    </main>
+    <div>
+        <nav>
+            {% include "nav.html" %}
+        </nav>
+    </div>
+    
+    <div>
+        <main>
+            {% block content %} 
+            
+            {% endblock %}
+        </main>
+    </div>
+    
     
     <footer>
         {% include "footer.html" %}

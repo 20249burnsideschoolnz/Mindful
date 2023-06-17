@@ -14,7 +14,15 @@
 <h5>
 {{results[2]}}
 </h5>
-    
+
+<h5>
+Likes: {{results[4]}}
+</h5>
+   
+<form action="/like" method="post">
+    <input type="hidden" name="like" value="{{ results[3] }}">
+    <input class="button" type="submit" value="Like">
+</form>
 
 {% endfor %}    
 
