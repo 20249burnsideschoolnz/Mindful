@@ -7,17 +7,17 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Document</title>
 </head>
+
+<div>
+    <nav>
+        {% include "nav.html" %}
+    </nav>
+</div>
+
 <body>
     <header>
         {% include "header.html" %}
     </header>
-
-    <div>
-        <nav>
-            {% include "nav.html" %}
-        </nav>
-    </div>
-    
     <div>
         <main>
             {% block content %} 
@@ -25,13 +25,12 @@
             {% endblock %}
         </main>
     </div>
-    
-    
-    <footer>
-        {% include "footer.html" %}
-    </footer>
-
 </body>
+
+<footer>
+    {% include "footer.html" %}
+</footer>
+
 </html>
 
     

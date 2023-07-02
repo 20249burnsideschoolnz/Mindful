@@ -1,29 +1,50 @@
 {% extends 'layout.html' %}
 {% block content %}
 
-<form action="/post_idea" method="post">
-    <h2><label for="post_idea">Create a post</label></h2>
-    <textarea class="input" required name="post_idea" id="post_idea" cols="36" rows="6" maxlength="120"></textarea>
+<form action="/ban_user" method="post">
+    <h2><label for="username">Ban A User</label></h2>
+    <textarea class="input" required name="username" id="username" cols="18" rows="1" maxlength="120"></textarea>
     <br><br>
-    <button class="button">Post</button>
+    <button class="button">Ban</button>
 </form>
 
-{% for results in results %}
-<h2>
-{{ results[2] }}
-</h2>
+<div class="admindiv">
+    {% for results in results %}
+    <h2>
+    {{ results[0] }}
+    </h2>
         
-<p>
-{{ results[3] }}
-</p>
+    <p>
+    {{ results[1] }}
+    </p>
         
-<h5>
-{{ results[1] }}
-</h5>
+    <h5>
+    {{results[2]}}
+    </h5>
+        
+    <h5>
+    Likes: {{results[4]}}
+    </h5>
+    
+    <form action="/delete_post" method="post">
+        <input type="hidden" name="post_id" value="{{ results[3] }}">
+        <button class="button">Delete</button>
+    </form>
+           
+    
+    {% endfor %}    
+</div>
 
-{% endfor %}
+<div class="admindiv">
 
-        
+    {% for results1 in results1 %}
+
+    <h3>{{results1[0]}}</h3>
+   
+    {% endfor %}
+
+</div>
+
 
 
 
