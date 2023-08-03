@@ -9,25 +9,26 @@
 </form>
 
 <div class="admindiv">
-    {% for results in results %}
+    <h1>Posts</h1>
+    {% for idea_data in idea_data %}
     <h2>
-    {{ results[0] }}
+    {{ idea_data[0] }}
     </h2>
         
     <p>
-    {{ results[1] }}
+    {{ idea_data[1] }}
     </p>
         
     <h5>
-    {{results[2]}}
+    {{idea_data[2]}}
     </h5>
         
     <h5>
-    Likes: {{results[4]}}
+    Likes: {{idea_data[4]}}
     </h5>
     
     <form action="/delete_post" method="post">
-        <input type="hidden" name="post_id" value="{{ results[3] }}">
+        <input type="hidden" name="post_id" value="{{ idea_data[3] }}">
         <button class="button">Delete</button>
     </form>
            
@@ -36,10 +37,10 @@
 </div>
 
 <div class="admindiv">
+<h1>Users</h1>
+    {% for username in username %}
 
-    {% for results1 in results1 %}
-
-    <h3>{{results1[0]}}</h3>
+    <h3>{{username[0]}}</h3>
    
     {% endfor %}
 

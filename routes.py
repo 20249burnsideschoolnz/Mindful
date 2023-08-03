@@ -4,52 +4,67 @@ import sqlite3
 app = Flask(__name__)
 
 app.secret_key = '123456'
+conn = sqlite3.connect("mindful.db")
+conn = sqlite3.connect('mindful.db', check_same_thread=False)
+cur = conn.cursor()
 
-# @app.route
+sort = 'popular'
 
 # Home page, displays a mindful post from a user when loading the home page.
 
-
 @app.route('/')
 def home():
-    conn = sqlite3.connect("mindful.db")
-    cur = conn.cursor()
     cur.execute('SELECT username, content, date FROM Gratitude_idea ORDER BY RANDOM() LIMIT 1')
-    results = cur.fetchone()
-    return render_template("home.html", results=results)
+    idea_data = cur.fetchone()
+    return render_template("home.html", idea_data=idea_data)
+
+
 
 # My post page, if user is logged in, it will display all posts by the current
 # user, if not it will redirect them to the login page.
 
-
 @app.route('/my_posts', methods=['GET'])
 def my_posts():
     if 'username' in session:
-        print("logged in")
-        conn = sqlite3.connect("mindful.db")
-        cur = conn.cursor()
         sql = 'SELECT * FROM Gratitude_idea WHERE username = ? ORDER BY date DESC'
         cur.execute(sql, (session['username'],))
-        results = cur.fetchall()
-        print(results)
-        return render_template("my_posts.html", results=results)
+        user_idea_data = cur.fetchall()
+        return render_template("my_posts.html", user_idea_data=user_idea_data)
     else:
-        print("not logged in")
-        return redirect("loginpage")    
+        return redirect("loginpage")   
+
+
 
 # Public post page, will display posts made by every user.
 
-
-@app.route('/public_posts')
+@app.route('/public_posts', methods=['GET','POST'])
 def public_posts():
-    conn = sqlite3.connect("mindful.db")
-    cur = conn.cursor()
-    cur.execute('SELECT username, content, date, id, like_count FROM Gratitude_idea ORDER BY date DESC')
-    results = cur.fetchall()
-    return render_template("public_posts.html", results=results)
+    global sort
+    if request.method == "GET":
+        if sort == 'popular':
+            cur.execute('SELECT username, content, date, id, like_count FROM Gratitude_idea ORDER BY like_count DESC')
+            idea_data = cur.fetchall()
+            print("Sort is popular")
+            return render_template("public_posts.html", idea_data=idea_data)
+        elif sort == 'newest':
+            cur.execute('SELECT username, content, date, id, like_count FROM Gratitude_idea ORDER BY date DESC')
+            idea_data = cur.fetchall()
+            print("Sort is newest")
+            return render_template("public_posts.html", idea_data=idea_data)
+        else:
+            cur.execute('SELECT username, content, date, id, like_count FROM Gratitude_idea ORDER BY date ASC')
+            idea_data = cur.fetchall()
+            print("Sort is oldest")
+            return render_template("public_posts.html", idea_data=idea_data)
+        
+    elif request.method == "POST":
+        sort = request.form['sort']
+        print("method posted")
+        return redirect("public_posts")
+    else:
+        return redirect("/")
 
 # Login page, user will input credentials to post content.
-
 
 @app.route('/loginpage')
 def loginpage():
@@ -58,22 +73,20 @@ def loginpage():
     # and password column until a legitimate combination has been found.
     return render_template("loginpage.html")
 
+
+
 # Admin page, locked by specific admin/password combination, will display all
 # posts and all usernames.
 
-
-@app.route('/admin', methods=['GET','POST'])
+@app.route('/admin', methods=['GET', 'POST'])
 def admin():
-    conn = sqlite3.connect("mindful.db")
-    cur = conn.cursor()
     cur.execute('SELECT username, content, date, id, like_count FROM Gratitude_idea ORDER BY date DESC')
-    results = cur.fetchall()
+    idea_data = cur.fetchall()
     cur.execute('SELECT username FROM User')
-    results1 = cur.fetchall()
-    return render_template("admin.html", results=results, results1=results1)       
+    username = cur.fetchall()
+    return render_template("admin.html", idea_data=idea_data, username=username)       
 
 
-# @app.post
 
 # If user is logged in as admin, it will redirect them to the admin page.
 @app.post('/adminlogin')
@@ -84,13 +97,13 @@ def adminlogin():
     else:
         return redirect('loginpage')
 
-# Allows users to insert posts into the database, requires their username, current date and post content.
 
+
+# Allows users to insert posts into the database, requires their username,
+# current date and post content.
 
 @app.post('/post_idea')
 def post_idea():
-    conn = sqlite3.connect("mindful.db")
-    cur = conn.cursor()
     sql = 'INSERT INTO Gratitude_idea (username, date, content) VALUES (?,?,?)'
     current_time = datetime.today().strftime('%d-%m-%Y')
     # Get username from cookie, get date from ?, get content from the form
@@ -99,13 +112,12 @@ def post_idea():
     conn.commit()
     return redirect("my_posts")       
 
-# Admin can ban users and remove their username and posts from the database.
 
+
+# Admin can ban users and remove their username and posts from the database.
 
 @app.post('/ban_user')
 def ban_user():
-    conn = sqlite3.connect("mindful.db")
-    cur = conn.cursor()
     sql = "DELETE FROM User WHERE username = ?"
     cur.execute(sql, (request.form['username'],))
     sql = "DELETE FROM Gratitude_idea WHERE username = ?"
@@ -113,33 +125,54 @@ def ban_user():
     conn.commit()
     return redirect("admin") 
 
-# Allows the current user to delete their posts from the database if needed.
 
+
+# Allows the current user to delete their posts from the database if needed.
 
 @app.post('/delete_my_post')
 def delete_my_post():
-    conn = sqlite3.connect("mindful.db")
-    cur = conn.cursor()
     sql = "DELETE FROM Gratitude_idea WHERE id = ?"
     cur.execute(sql, (request.form['post_id'],))
     conn.commit()
     return redirect("my_posts")
 
-# Allows users to "like" other posts made by users in the public posts page.
 
+
+# Allows users to "like" other posts made by users in the public posts page.
 
 @app.post('/like') 
 def like():
-    conn = sqlite3.connect("mindful.db")
-    cur = conn.cursor()
-    sql = "UPDATE Gratitude_idea SET like_count = like_count + 1 WHERE id = ?"
-    cur.execute(sql, (request.form['like'],))
-    conn.commit()
-    return redirect("public_posts")
+    if 'username' in session:
+        user_id_query = "SELECT id FROM User WHERE username = (?)" 
+        user_id = cur.fetchone()
+        cur.execute(user_id_query, (session['username'],))
+
+        liked_query = "SELECT id FROM Liked_Posts WHERE post_id = (?) AND user = (?)"
+        cur.execute(liked_query, (request.form['like'], user_id,))
+        print(request.form['like'])
+        print(user_id)
+        post_id = cur.fetchone()
+        print(post_id)
+
+        if post_id is None:
+            print('this is none')
+            like_a_post_query = "INSERT INTO Liked_Posts (user, post_id) VALUES (?,?)"
+            cur.execute(like_a_post_query, (user_id[0], request.form['like'],))
+            conn.commit()
+            return redirect("public_posts") 
+        else:
+            print('this isnt none')    
+            remove_a_like_query = "DELETE FROM Liked_Posts WHERE post_id = (?) AND user = (?)"
+            cur.execute(remove_a_like_query, (request.form['like'], user_id,))
+            conn.commit()
+            return redirect("public_posts")           
+    else:
+        return redirect('loginpage')
+        
+
 
 # Allows the user to create or login into thier account using thier username
 # and password.
-
 
 @app.post('/create_or_login')
 def create_or_login():
@@ -147,8 +180,6 @@ def create_or_login():
 
     # If the user is trying to create a new account.
     if create_or_login == "create_account":
-        conn = sqlite3.connect("mindful.db")
-        cur = conn.cursor()
         
         # Database will return a username if it exists
         sql = 'SELECT username FROM User WHERE username = (?)' 
@@ -168,10 +199,9 @@ def create_or_login():
             # Alerts the user that the username is already taken
             msg = "Sorry, username has been taken"
             return render_template("loginpage.html", msg=msg)
+        
     # If the user is attempting to login into thier existing account.
     if create_or_login == "login":
-        conn = sqlite3.connect("mindful.db")
-        cur = conn.cursor()
         sql = 'SELECT username, password FROM User WHERE username = (?) AND password = (?)'
         cur.execute(sql, (request.form['username'], request.form['password']))
         results = cur.fetchall()

@@ -1,27 +1,39 @@
 {% extends 'layout.html' %}
 {% block content %}
 
-{% for results in results %}
+<form action="/public_posts" method="post">
+    <label for="sort">Sort by:</label>
+    <select class="input" name="sort" id="sort">
+        <option value="popular">Popular</option>
+        <option value="newest">Newest</option>
+        <option value="oldest">Oldest</option>
+    </select>
+    <br><br>
+    <input type="hidden" name="sort" value="sort">
+    <input class="button" type="submit" value="Submit">
+  </form>
+
+{% for idea_data in idea_data %}
 
 <div>
         <h2>
-        {{ results[0] }}
+        {{ idea_data[0] }}
         </h2>
         
         <p>
-        {{ results[1] }}
+        {{ idea_data[1] }}
         </p>
         
         <h5>
-        {{results[2]}}
+        {{ idea_data[2] }}
         </h5>
         
         <h5>
-        Likes: {{results[4]}}
+        Likes: {{ idea_data[4] }}
         </h5>
            
         <form action="/like" method="post">
-            <input type="hidden" name="like" value="{{ results[3] }}">
+            <input type="hidden" name="like" value="{{  idea_data[3] }}">
             <input class="button" type="submit" value="Like">
         </form>
 </div>

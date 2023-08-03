@@ -8,45 +8,25 @@
     <button class="button">Post</button>
 </form>
 
-{% for results in results %}
+{% for user_idea_data in user_idea_data %}
      
 <div>
     <br><br>
     <p>
-        "{{ results[3] }}"
+        "{{ user_idea_data[3] }}"
         </p>
                 
         <h5>
-        {{ results[1] }}
+        {{ user_idea_data[1] }}
         </h5>
         
         <form action="/delete_my_post" method="post">
-            <input type="hidden" name="post_id" value="{{ results[0] }}">
+            <input type="hidden" name="post_id" value="{{ user_idea_data[0] }}">
             <button class="button">Delete</button>
         </form>
 </div>
 
 
 {% endfor %}
-
-<br><br>
-<br><br>
-<br><br>
-<br><br>
-<br><br>
-<br><br>
-<br><br>
-<br><br>
-<br><br>
-<br><br>
-<br><br>
-<br><br>
-<br><br>
-<br><br>
-<br><br>
-
-
-
-
 
 {% endblock %}
