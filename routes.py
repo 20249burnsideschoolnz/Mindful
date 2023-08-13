@@ -42,24 +42,20 @@ def public_posts():
     global sort
     if request.method == "GET":
         if sort == 'popular':
-            cur.execute('SELECT username, content, date, id, like_count FROM Gratitude_idea ORDER BY like_count DESC')
+            cur.execute('SELECT username, content, date, id, like_count FROM Gratitude_idea WHERE is_public = 1 ORDER BY like_count DESC ')
             idea_data = cur.fetchall()
-            print("Sort is popular")
             return render_template("public_posts.html", idea_data=idea_data)
         elif sort == 'newest':
-            cur.execute('SELECT username, content, date, id, like_count FROM Gratitude_idea ORDER BY date DESC')
+            cur.execute('SELECT username, content, date, id, like_count FROM Gratitude_idea WHERE is_public = 1 ORDER BY date DESC ')
             idea_data = cur.fetchall()
-            print("Sort is newest")
             return render_template("public_posts.html", idea_data=idea_data)
         else:
-            cur.execute('SELECT username, content, date, id, like_count FROM Gratitude_idea ORDER BY date ASC')
+            cur.execute('SELECT username, content, date, id, like_count FROM Gratitude_idea WHERE is_public = 1 ORDER BY date ASC ')
             idea_data = cur.fetchall()
-            print("Sort is oldest")
             return render_template("public_posts.html", idea_data=idea_data)
         
     elif request.method == "POST":
         sort = request.form['sort']
-        print("method posted")
         return redirect("public_posts")
     else:
         return redirect("/")
@@ -104,11 +100,11 @@ def adminlogin():
 
 @app.post('/post_idea')
 def post_idea():
-    sql = 'INSERT INTO Gratitude_idea (username, date, content) VALUES (?,?,?)'
+    sql = 'INSERT INTO Gratitude_idea (username, date, content, is_public) VALUES (?,?,?,?)'
     current_time = datetime.today().strftime('%d-%m-%Y')
     # Get username from cookie, get date from ?, get content from the form
     # "create post" or "post_idea"
-    cur.execute(sql, (session['username'], current_time, request.form['post_idea']))
+    cur.execute(sql, (session['username'], current_time, request.form['post_idea'], request.form['radio']))
     conn.commit()
     return redirect("my_posts")       
 
@@ -142,30 +138,37 @@ def delete_my_post():
 
 @app.post('/like') 
 def like():
+    
     if 'username' in session:
-        user_id_query = "SELECT id FROM User WHERE username = (?)" 
+        cur.execute("SELECT id FROM User WHERE username = ?", (session['username'],))
         user_id = cur.fetchone()
-        cur.execute(user_id_query, (session['username'],))
-
         liked_query = "SELECT id FROM Liked_Posts WHERE post_id = (?) AND user = (?)"
-        cur.execute(liked_query, (request.form['like'], user_id,))
-        print(request.form['like'])
-        print(user_id)
+        cur.execute(liked_query, (request.form['like'], user_id[0],))
         post_id = cur.fetchone()
-        print(post_id)
 
-        if post_id is None:
-            print('this is none')
+        if post_id == None:
             like_a_post_query = "INSERT INTO Liked_Posts (user, post_id) VALUES (?,?)"
             cur.execute(like_a_post_query, (user_id[0], request.form['like'],))
+            post_id = request.form['like']
+            select_count_query = "SELECT COUNT(id) FROM Liked_Posts WHERE post_id = ?"     
+            cur.execute(select_count_query, (post_id,))
+            count = cur.fetchone()
+            set_like = "UPDATE Gratitude_idea SET like_count = ? WHERE id = ?"
+            cur.execute(set_like, (count[0], post_id))
             conn.commit()
             return redirect("public_posts") 
         else:
-            print('this isnt none')    
-            remove_a_like_query = "DELETE FROM Liked_Posts WHERE post_id = (?) AND user = (?)"
-            cur.execute(remove_a_like_query, (request.form['like'], user_id,))
+            unlike_a_post_query = "DELETE FROM Liked_Posts WHERE post_id = (?) AND user = (?)"
+            cur.execute(unlike_a_post_query, (request.form['like'], user_id[0],))
+            post_id = request.form['like']
+            select_count_query = "SELECT COUNT(id) FROM Liked_Posts WHERE post_id = ?"
+            cur.execute(select_count_query, (post_id))
+            count = cur.fetchone()
+            set_like = "UPDATE Gratitude_idea SET like_count = ? WHERE id = ?"
+            cur.execute(set_like, (count[0], post_id[0]))   
             conn.commit()
-            return redirect("public_posts")           
+            return redirect("public_posts") 
+            
     else:
         return redirect('loginpage')
         
@@ -215,6 +218,9 @@ def create_or_login():
             session["username"] = request.form['username']
             return redirect('/my_posts')
 
+@app.errorhandler(404)
+def page_not_found(e):
+    return render_template('404.html'), 404
 
 if __name__ == "__main__":
     app.run(debug=True)

@@ -128,3 +128,19 @@ form{
     display: flex;
     flex-direction: column;
 }
+
+.image-border{
+    padding: 4%;
+}
+
+.image{
+    width: 22%;
+    border-style: solid;
+    border-radius: 8px;
+    border-width: 4px;
+    border-color: #dbc1ac;
+  }
+
+
+  
+  
