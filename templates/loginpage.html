@@ -2,22 +2,18 @@
 {% block content %}
 <br><br>
 
+
 <form action="/create_or_login" method="post">
-    <label for="username">Whats your username?</label>
-    <input class="input" type="username" name="username" required>
-    <br><br>
-    <label for="password">Whats your password?</label>
-    <input class="input" type="password" name="password" required>
-    <br><br>
-    <button class="button" type="submit" name="create_or_login" value="create_account">Create account</button>
-    <button class="button" type="submit" name="create_or_login" value="login">Login</button>
+  <label for="username">Whats your username?</label>
+  <input class="input" type="username" name="username" required>
+  <br><br>
+  <label for="password">Whats your password?</label>
+  <input class="input" type="password" name="password" required>
+  <br><br>
+  <button class="button" type="submit" name="create_or_login" value="create_account">Create account</button>
+  <button class="button" type="submit" name="create_or_login" value="login">Login</button>
 </form>
-
-{{ msg }}
-
-<div class="image-border">
-  <img class="image" src="{{url_for('static', filename='images/Mindful1.png')}}" alt="Mindful">
-</div>
+  {{ msg }}
 
 
 {% endblock %}

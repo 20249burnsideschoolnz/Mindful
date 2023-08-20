@@ -1,10 +1,8 @@
 {% extends 'layout.html' %}
 {% block content %}
-
-<div>
     <form action="/post_idea" method="post">
         <h2><label for="post_idea">Create a post</label></h2>
-        <textarea class="input" required name="post_idea" id="post_idea" cols="36" rows="6" maxlength="120"></textarea>
+        <textarea class="input" required name="post_idea" id="post_idea" cols="36" rows="6" maxlength="200"></textarea>
         <br><br>
         <label class="checkcontainer">Public
             <input type="radio" checked="checked" value="1" name="radio">
@@ -14,31 +12,26 @@
         </label>
         <br><br> 
         <button class="button">Post</button>
+            
+     </form>
         
-    </form>
-    
     {% for user_idea_data in user_idea_data %}
-         
+             
     <div>
         <br><br>
         <p>
             "{{ user_idea_data[3] }}"
-            </p>
-                    
-            <h5>
-            {{ user_idea_data[1] }}
-            </h5>
-            
-            <form action="/delete_my_post" method="post">
-                <input type="hidden" name="post_id" value="{{ user_idea_data[0] }}">
-                <button class="button">Delete</button>
-            </form>
+        </p>
+                        
+        <h5>
+        {{ user_idea_data[1] }}
+        </h5>
+                
+        <form action="/delete_my_post" method="post">
+            <input type="hidden" name="post_id" value="{{ user_idea_data[0] }}">
+            <button class="button">Delete</button>
+        </form>
     </div>
-    
-    
     {% endfor %}
-</div>
-
-
 
 {% endblock %}

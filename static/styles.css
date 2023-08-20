@@ -22,7 +22,6 @@ body{
     background-color: #ece0d1;
     margin: auto;
     text-align: center;
-    display: flex;
     min-height: 100vh;
 }
 
@@ -31,9 +30,6 @@ div{
     padding-bottom: 1.5%;
 }
 
-.admindiv{
-    float: left;
-}
 
 .nav_element{
     padding-left: 5px;
@@ -70,9 +66,9 @@ h6{
 }
 
 p{
+    overflow-wrap: break-word;
     font-family: cursive;
     color: #634832;
-    width: 33%;
     margin: auto;
 }
 
@@ -91,6 +87,7 @@ form{
     font-family: sans-serif;
     color: #38220f;
 }
+
 
 .button{
     background-color: #ece0d1;
@@ -123,24 +120,29 @@ form{
     font-size: medium;
 }
 
-.container{
-    flex: 1; 
+.flex{
     display: flex;
-    flex-direction: column;
+    flex-direction: row;    
 }
 
-.image-border{
-    padding: 4%;
-}
-
-.image{
-    width: 22%;
+.flex-image{
+    width: 20%;
+    height: 70%;
     border-style: solid;
-    border-radius: 8px;
-    border-width: 4px;
     border-color: #dbc1ac;
-  }
+    position: fixed;
+    display: flex;
+}  
 
+.flex-element-image-column{
+    width: 30%;
+    padding-left: 12px;
+    padding-right: 12px;
+    
+}
 
-  
-  
+.flex-element-posts-column{
+    width: 40%;
+    padding-left: 10%;
+    padding-right: 10%;
+}

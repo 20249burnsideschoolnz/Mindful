@@ -8,8 +8,9 @@
     <button class="button">Ban</button>
 </form>
 
-<div class="admindiv">
+<div>
     <h1>Posts</h1>
+    <br><br>
     {% for idea_data in idea_data %}
     <h2>
     {{ idea_data[0] }}
@@ -36,8 +37,9 @@
     {% endfor %}    
 </div>
 
-<div class="admindiv">
+<div>
 <h1>Users</h1>
+<br><br>
     {% for username in username %}
 
     <h3>{{username[0]}}</h3>

@@ -1,6 +1,6 @@
 from flask import Flask, render_template, session, request, redirect
 from datetime import datetime
-import sqlite3
+import sqlite3, random, os
 app = Flask(__name__)
 
 app.secret_key = '123456'
@@ -9,8 +9,22 @@ conn = sqlite3.connect('mindful.db', check_same_thread=False)
 cur = conn.cursor()
 
 sort = 'popular'
+first_login = True
 
 # Home page, displays a mindful post from a user when loading the home page.
+
+
+@app.context_processor
+def randomimages():
+    image_folder = os.path.join(app.static_folder, 'images')
+    images = os.listdir(image_folder)
+    random_image = random.choice(images)
+    image_url = f"images/{random_image}"  # Construct the URL
+    image_url1 = f"images/{random_image}"
+    print(image_url)
+    print(image_url1)
+    return dict(image_url=image_url, image_url1 = image_url1)
+
 
 @app.route('/')
 def home():
@@ -64,9 +78,6 @@ def public_posts():
 
 @app.route('/loginpage')
 def loginpage():
-    # If the given credentials are found in the user table then
-    # the user can login with those credentials. Loop through username column
-    # and password column until a legitimate combination has been found.
     return render_template("loginpage.html")
 
 
@@ -87,13 +98,13 @@ def admin():
 # If user is logged in as admin, it will redirect them to the admin page.
 @app.post('/adminlogin')
 def adminlogin():
-    if 'username' in session:
-        if session['username'] == 'admin':
-            return redirect('admin')
+    global first_login
+    if first_login == True:
+        return redirect('loginpage')
+    elif session['username'] == 'admin':
+        return redirect('admin')
     else:
         return redirect('loginpage')
-
-
 
 # Allows users to insert posts into the database, requires their username,
 # current date and post content.
@@ -179,6 +190,7 @@ def like():
 
 @app.post('/create_or_login')
 def create_or_login():
+    global first_login
     create_or_login = request.form['create_or_login']
 
     # If the user is trying to create a new account.
@@ -196,6 +208,7 @@ def create_or_login():
             cur.execute(sql, (request.form['username'], request.form['password']))
             conn.commit()
             session["username"] = request.form['username']
+            first_login = False
             return redirect("/")
         else:
 
@@ -216,11 +229,20 @@ def create_or_login():
         # If it does exist the user can login and redirected to their posts.
         else:
             session["username"] = request.form['username']
+            first_login = False
             return redirect('/my_posts')
 
 @app.errorhandler(404)
 def page_not_found(e):
     return render_template('404.html'), 404
+
+@app.errorhandler(405)
+def method_not_allowed(e):
+    return render_template('405.html'), 405
+
+@app.errorhandler(500)
+def internal_server_error(e):
+    return render_template('500.html'), 500
 
 if __name__ == "__main__":
     app.run(debug=True)

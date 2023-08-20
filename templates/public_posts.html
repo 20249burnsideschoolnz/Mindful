@@ -1,6 +1,5 @@
 {% extends 'layout.html' %}
 {% block content %}
-
 <form action="/public_posts" method="post">
     <label for="sort">Sort by:</label>
     <select class="input" name="sort" id="sort">
@@ -11,35 +10,32 @@
     <br><br>
     <input type="hidden" name="sort" value="sort">
     <input class="button" type="submit" value="Submit">
-  </form>
-
+    </form>
+        
 {% for idea_data in idea_data %}
-
+        
 <div>
-        <h2>
+    <h2>
         {{ idea_data[0] }}
-        </h2>
-        
-        <p>
+    </h2>
+                
+    <p>
         {{ idea_data[1] }}
-        </p>
-        
-        <h5>
+    </p>
+                
+    <h5>
         {{ idea_data[2] }}
-        </h5>
-        
-        <h5>
+    </h5>
+                
+    <h5>
         Likes: {{ idea_data[4] }}
-        </h5>
-           
-        <form action="/like" method="post">
-            <input type="hidden" name="like" value="{{  idea_data[3] }}">
-            <input class="button" type="submit" value="Like">
-        </form>
+    </h5>
+                   
+    <form action="/like" method="post">
+        <input type="hidden" name="like" value="{{  idea_data[3] }}">
+        <input class="button" type="submit" value="Like">
+    </form>
 </div>
-
-
-
+        
 {% endfor %}    
-
 {% endblock %}
