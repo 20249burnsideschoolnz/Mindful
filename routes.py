@@ -14,23 +14,16 @@ first_login = True
 # Home page, displays a mindful post from a user when loading the home page.
 
 
-@app.context_processor
-def randomimages():
-    image_folder = os.path.join(app.static_folder, 'images')
-    images = os.listdir(image_folder)
-    random_image = random.choice(images)
-    image_url = f"images/{random_image}"  # Construct the URL
-    image_url1 = f"images/{random_image}"
-    print(image_url)
-    print(image_url1)
-    return dict(image_url=image_url, image_url1 = image_url1)
+
 
 
 @app.route('/')
 def home():
     cur.execute('SELECT username, content, date FROM Gratitude_idea ORDER BY RANDOM() LIMIT 1')
     idea_data = cur.fetchone()
-    return render_template("home.html", idea_data=idea_data)
+    cur.execute('SELECT username, content, date FROM Gratitude_idea ORDER BY RANDOM() LIMIT 1')
+    idea_data1 = cur.fetchone()
+    return render_template("home.html", idea_data=idea_data, idea_data1 = idea_data1)
 
 
 
@@ -71,7 +64,7 @@ def public_posts():
     elif request.method == "POST":
         sort = request.form['sort']
         return redirect("public_posts")
-    else:
+    else:   
         return redirect("/")
 
 # Login page, user will input credentials to post content.
@@ -149,7 +142,6 @@ def delete_my_post():
 
 @app.post('/like') 
 def like():
-    
     if 'username' in session:
         cur.execute("SELECT id FROM User WHERE username = ?", (session['username'],))
         user_id = cur.fetchone()
@@ -158,25 +150,29 @@ def like():
         post_id = cur.fetchone()
 
         if post_id == None:
+            #Likes a post, inserts into table, updates like count
             like_a_post_query = "INSERT INTO Liked_Posts (user, post_id) VALUES (?,?)"
             cur.execute(like_a_post_query, (user_id[0], request.form['like'],))
             post_id = request.form['like']
             select_count_query = "SELECT COUNT(id) FROM Liked_Posts WHERE post_id = ?"     
             cur.execute(select_count_query, (post_id,))
             count = cur.fetchone()
+            print(count)
             set_like = "UPDATE Gratitude_idea SET like_count = ? WHERE id = ?"
             cur.execute(set_like, (count[0], post_id))
             conn.commit()
+            print(post_id)
             return redirect("public_posts") 
         else:
+            #Unlikes a post, removes from table, updates like count
             unlike_a_post_query = "DELETE FROM Liked_Posts WHERE post_id = (?) AND user = (?)"
             cur.execute(unlike_a_post_query, (request.form['like'], user_id[0],))
             post_id = request.form['like']
             select_count_query = "SELECT COUNT(id) FROM Liked_Posts WHERE post_id = ?"
-            cur.execute(select_count_query, (post_id))
+            cur.execute(select_count_query, (post_id,))
             count = cur.fetchone()
             set_like = "UPDATE Gratitude_idea SET like_count = ? WHERE id = ?"
-            cur.execute(set_like, (count[0], post_id[0]))   
+            cur.execute(set_like, (count[0], post_id))   
             conn.commit()
             return redirect("public_posts") 
             
@@ -231,6 +227,21 @@ def create_or_login():
             session["username"] = request.form['username']
             first_login = False
             return redirect('/my_posts')
+        
+#Chooses a random image from        
+def get_random_image():
+    image_folder = os.path.join(app.static_folder, 'images')
+    images = os.listdir(image_folder)
+    random_image = random.choice(images)
+    return f"static/images/{random_image}"
+
+#Allows random images to be used by all pages.
+
+@app.context_processor
+def inject_random_image():
+    return {'random_image': get_random_image(), 'random_image1': get_random_image()}      
+
+#Error pages
 
 @app.errorhandler(404)
 def page_not_found(e):
@@ -245,4 +256,4 @@ def internal_server_error(e):
     return render_template('500.html'), 500
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    app.run(debug=False)
