@@ -92,6 +92,17 @@ a:hover{
     box-shadow: 0 6px 8px 0 rgba(0,0,0,0.06),0 8px 25px 0 rgba(0,0,0,0.12);
 }
 
+.button_underline{
+    font-family: sans-serif;
+    color: #38220f;
+}
+
+.button_underline:hover{
+    font-family: sans-serif;
+    color: #38220f;
+    box-shadow: 0 6px 8px 0 rgba(0,0,0,0.06),0 8px 25px 0 rgba(0,0,0,0.12);
+}
+
 label{
     font-family: sans-serif;
     color: #38220f;
@@ -117,6 +128,11 @@ label{
 
 .input{
     background-color: #ece0d1;
+}
+
+.check_button{
+    padding-left: 2%;
+    padding-right: 2%;
 }
 
 #admin{

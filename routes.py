@@ -1,4 +1,4 @@
-from flask import Flask, render_template, session, request, redirect
+from flask import Flask, render_template, session, request, redirect, flash
 from datetime import datetime
 import sqlite3, random, os
 app = Flask(__name__)
@@ -13,7 +13,16 @@ first_login = True
 
 # Home page, displays a mindful post from a user when loading the home page.
 
-
+def db_query(query, is_single, is_insert, data):
+    conn = sqlite3.connect("mindful.db")
+    cur = conn.cursor()
+    cur.execute(query, data)
+    if is_single == True:
+        cur.fetchone()
+    else:
+        cur.fetchall()
+    if is_insert == True:
+        conn.commit()
 
 
 
@@ -136,6 +145,12 @@ def delete_my_post():
     conn.commit()
     return redirect("my_posts")
 
+@app.post('/delete_their_post')
+def delete_their_post():
+    sql = "DELETE FROM Gratitude_idea WHERE id = ?"
+    cur.execute(sql, (request.form['post_id'],))
+    conn.commit()
+    return redirect("admin")
 
 
 # Allows users to "like" other posts made by users in the public posts page.
@@ -193,7 +208,7 @@ def create_or_login():
     if create_or_login == "create_account":
         
         # Database will return a username if it exists
-        sql = 'SELECT username FROM User WHERE username = (?)' 
+        sql = 'SELECT username FROM User WHERE username = ?' 
         cur.execute(sql, (request.form['username'],))
         username = cur.fetchone() 
 
@@ -205,6 +220,7 @@ def create_or_login():
             conn.commit()
             session["username"] = request.form['username']
             first_login = False
+            flash('You have been logged in, redirecting you to home page')
             return redirect("/")
         else:
 
@@ -223,11 +239,19 @@ def create_or_login():
             msg = "Incorrect username or password"
             return render_template("loginpage.html", msg=msg)
         # If it does exist the user can login and redirected to their posts.
+        elif request.form['username'] == 'admin':
+            return redirect('admin')
         else:
             session["username"] = request.form['username']
             first_login = False
             return redirect('/my_posts')
         
+@app.post('/logout')
+def logout():
+    session.clear()
+    return redirect('/')
+
+
 #Chooses a random image from        
 def get_random_image():
     image_folder = os.path.join(app.static_folder, 'images')
@@ -256,4 +280,4 @@ def internal_server_error(e):
     return render_template('500.html'), 500
 
 if __name__ == "__main__":
-    app.run(debug=False)
+    app.run(debug=True)
