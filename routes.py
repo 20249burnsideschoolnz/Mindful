@@ -62,12 +62,18 @@ def my_posts():
 @app.route('/public_posts', methods=['GET', 'POST'])
 def public_posts():
     global sort
+    cur.execute("SELECT id FROM User WHERE username = ?",
+                (session['username'],))
+    user_id = cur.fetchone()
+
     if request.method == "GET":
         if sort == 'popular':
             cur.execute('SELECT username, content, date, id, like_count FROM\
                  Gratitude_idea WHERE is_public = 1 ORDER BY like_count DESC ')
             idea_data = cur.fetchall()
-            return render_template("public_posts.html", idea_data=idea_data)
+            cur.execute('SELECT id FROM Liked_Posts WHERE post_id = ?', user_id)
+            liked = cur.fetchall()
+            return render_template("public_posts.html", idea_data=idea_data, liked=liked)
         elif sort == 'newest':
             cur.execute('SELECT username, content, date, id, like_count FROM\
                  Gratitude_idea WHERE is_public = 1 ORDER BY date DESC ')
@@ -112,6 +118,8 @@ def admin():
                            username=username)
 
 # If user is logged in as admin, it will redirect them to the admin page.
+
+
 @app.post('/adminlogin')
 def adminlogin():
     if session['username'] == 'admin':
