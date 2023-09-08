@@ -2,12 +2,26 @@
         <a class="nav_element" href="/">Home</a>
         <a class="nav_element" href="/my_posts">My Thoughts</a>
         <a class="nav_element" href="/public_posts">Public thoughts</a>
-
-     
-        <a class="nav_element" href="/loginpage">Login</a>  
-   
-
+        {% if session.username == "admin" %}
+        <!-- Admin -->
         <form action="/adminlogin" method="post">
-        <button class="button_underline" id="admin">Admin</button>
+                <button class="button" id="admin">Admin</button>
         </form> 
+        <a id="username_nav" class="nav_element">Welcome back, {{ session.username }}! </a>
+                <form action="/logout" method="post">
+                        <button class="nav_button" id="logout"><a> Logout</a></button>
+                </form> 
+        {% elif session['username'] %}
+        <!-- Logout -->
+        <a id="username_nav" class="nav_element">Welcome back, {{ session.username }}! </a>
+        <form action="/logout" method="post">
+                <button class="nav_button" id="logout"><a> Logout</a></button>
+        </form> 
+        {% else %}
+        <!-- Login -->
+        <a class="nav_element" href="/create_account_page">Create an account</a>  
+        <a class="nav_element" href="/loginpage">Login</a>
+        {% endif %}
+
+       
 </div>

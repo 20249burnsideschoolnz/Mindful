@@ -53,6 +53,7 @@ def my_posts():
         user_idea_data = cur.fetchall()
         return render_template("my_posts.html", user_idea_data=user_idea_data)
     else:
+        flash('First please create an account or login to an existing one.')
         return redirect("loginpage")
 
 
@@ -92,6 +93,11 @@ def loginpage():
     return render_template("loginpage.html")
 
 
+@app.route('/create_account_page')
+def create_account_page():
+    return render_template("create_account_page.html")
+
+
 # Admin page, locked by specific admin/password combination, will display all
 # posts and all usernames.
 
@@ -105,14 +111,10 @@ def admin():
     return render_template("admin.html", idea_data=idea_data,
                            username=username)
 
-
 # If user is logged in as admin, it will redirect them to the admin page.
 @app.post('/adminlogin')
 def adminlogin():
-    global first_login
-    if first_login is True:
-        return redirect('loginpage')
-    elif session['username'] == 'admin':
+    if session['username'] == 'admin':
         return redirect('admin')
     else:
         return redirect('loginpage')
@@ -218,19 +220,37 @@ def like():
 # Allows the user to create or login into thier account using thier username
 # and password.
 
-@app.post('/create_or_login')
-def create_or_login():
+@app.post('/login')
+def login():
     global first_login
-    create_or_login = request.form['create_or_login']
+    sql = 'SELECT username, password FROM User WHERE username = ?\
+                                                     AND password = ?'
+    cur.execute(sql, (request.form['username'], request.form['password']))
+    results = cur.fetchall()
 
-    # If the user is trying to create a new account.
-    if create_or_login == "create_account":
+    # If username/password combination is not found within the database.
+    if not results:
+        flash("Incorrect username or password.")
+        return render_template("loginpage.html")
+    # If it does exist the user can login and redirected to their posts.
+    elif request.form['username'] == 'admin':
+        session["username"] = request.form['username']
+        return redirect('admin')
+    else:
+        session["username"] = request.form['username']
+        first_login = False
+        return redirect('/my_posts')
 
-        # Database will return a username if it exists
-        sql = 'SELECT username FROM User WHERE username = ?'
-        cur.execute(sql, (request.form['username'],))
-        username = cur.fetchone()
 
+@app.post('/create_account')
+def create_account():
+    global first_login
+    # Database will return a username if it exists
+    sql = 'SELECT username FROM User WHERE username = ?'
+    cur.execute(sql, (request.form['username'],))
+    username = cur.fetchone()
+
+    if request.form['password'] == request.form['confirm_password']:
         # If it doesnt exist then it will insert it into the database and the
         # username session is filled.
         if username is None:
@@ -240,32 +260,18 @@ def create_or_login():
             conn.commit()
             session["username"] = request.form['username']
             first_login = False
-            flash('You have been logged in, redirecting you to home page')
-            return redirect("/")
+            flash('You have created an account!, redirecting you to your page.')
+            print('logged in')
+            return redirect("/my_posts")
         else:
-
             # Alerts the user that the username is already taken
-            msg = "Sorry, username has been taken"
-            return render_template("loginpage.html", msg=msg)
-
-    # If the user is attempting to login into thier existing account.
-    if create_or_login == "login":
-        sql = 'SELECT username, password FROM User WHERE username = ?\
-                                                     AND password = ?'
-        cur.execute(sql, (request.form['username'], request.form['password']))
-        results = cur.fetchall()
-
-        # If username/password combination is not found within the database.
-        if not results:
-            msg = "Incorrect username or password"
-            return render_template("loginpage.html", msg=msg)
-        # If it does exist the user can login and redirected to their posts.
-        elif request.form['username'] == 'admin':
-            return redirect('admin')
-        else:
-            session["username"] = request.form['username']
-            first_login = False
-            return redirect('/my_posts')
+            flash('Sorry, that username has been taken.')
+            print('taken')
+            return redirect('/create_account_page')
+    else:
+        flash('Passwords do not match.')
+        print('pass dont match')
+        return redirect('/create_account_page')
 
 
 @app.post('/logout')
@@ -289,6 +295,11 @@ def get_random_image():
 def inject_random_image():
     return {'random_image': get_random_image(),
             'random_image1': get_random_image()}
+
+
+def session_username():
+    if 'username' in session:
+        return {'username': session['username']}
 
 # Error pages
 

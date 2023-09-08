@@ -27,8 +27,6 @@ body{
     min-height: 100vh;
 }
 
-
-
 div{
     padding-top: 1.5%;
     padding-bottom: 1.5%;
@@ -37,8 +35,8 @@ div{
 /* Navbar elements */
 
 .nav_element{
-    padding-left: 5px;
-    padding-right: 5px;
+    padding-left: 0.5%;
+    padding-right: 0.5%;
 }
 
 #nav{
@@ -67,15 +65,25 @@ h3{
     color: #634832;
 }
 
+h5{
+    font-family: sans-serif;
+    color: #38220f;
+    padding-left: 5%;
+    padding-right: 5%;
+}
+
 h6{
     font-family: monospace;
     color: #38220f;
 }
 
 p{
-    overflow-wrap: break-word;
     font-family: cursive;
     color: #634832;
+}
+
+.p_overflow{
+    overflow-wrap: break-word;
     margin: auto;
 }
 
@@ -104,8 +112,21 @@ a:hover{
 }
 
 label{
-    font-family: sans-serif;
+    font-family: monospace;
+    font-size: large;
     color: #38220f;
+}
+
+.nav_button{
+  background: none!important;
+  border: none;
+  padding: 0!important;
+  font-size: medium;
+  /*optional*/
+  font-family: sans-serif;
+  text-decoration: underline;
+  cursor: pointer;
+
 }
 
 .button{

@@ -1,19 +1,27 @@
 {% extends 'layout.html' %}
 {% block content %}
 <br><br>
+{% with messages = get_flashed_messages() %}
+  {% if messages %}
+    {% for msg in messages %}
+      <p>{{ msg }}</p>
+    {% endfor %}
+  {% endif %}
+{% endwith %}   
+<br><br>
 
-
-<form action="/create_or_login" method="post">
+<form action="/login" method="post">
   <label for="username">Whats your username?</label>
   <input class="input" type="username" name="username" required>
   <br><br>
   <label for="password">Whats your password?</label>
   <input class="input" type="password" name="password" required>
   <br><br>
-  <button class="button" type="submit" name="create_or_login" value="create_account">Create account</button>
-  <button class="button" type="submit" name="create_or_login" value="login">Login</button>
+  <button class="button" type="submit" name="login" value="login">Login</button>
 </form>
-  {{ msg }}
 
+<br><br>
+<p>Did you want to create an account instead?</p>
+<a class="nav_element" href="/loginpage">Login</a>
 
 {% endblock %}
