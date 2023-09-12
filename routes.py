@@ -17,17 +17,23 @@ first_login = True
 # Home page, displays a mindful post from a user when loading the home page.
 
 
-def db_query(query, is_single, is_insert, data):
+def db_query(query, is_single=False, is_insert=False, data=None):
     conn = sqlite3.connect("mindful.db")
-    cur = conn.cursor()
-    cur.execute(query, data)
-    if is_single is True:
-        cur.fetchone()
-    else:
-        cur.fetchall()
-    if is_insert is True:
-        conn.commit()
+    try:
+        cur = conn.cursor()
+        cur.execute(query, data)
 
+        if is_insert:
+            conn.commit()
+
+        if is_single:
+            result = cur.fetchone()
+        else:
+            result = cur.fetchall()
+
+        return result
+    finally:
+        conn.close()
 
 @app.route('/')
 def home():
@@ -62,34 +68,47 @@ def my_posts():
 @app.route('/public_posts', methods=['GET', 'POST'])
 def public_posts():
     global sort
-    cur.execute("SELECT id FROM User WHERE username = ?",
-                (session['username'],))
-    user_id = cur.fetchone()
 
-    if request.method == "GET":
-        if sort == 'popular':
-            cur.execute('SELECT username, content, date, id, like_count FROM\
-                 Gratitude_idea WHERE is_public = 1 ORDER BY like_count DESC ')
-            idea_data = cur.fetchall()
-            cur.execute('SELECT id FROM Liked_Posts WHERE post_id = ?', user_id)
-            liked = cur.fetchall()
-            return render_template("public_posts.html", idea_data=idea_data, liked=liked)
-        elif sort == 'newest':
-            cur.execute('SELECT username, content, date, id, like_count FROM\
+    if 'username' in session:
+        cur.execute("SELECT id FROM User WHERE username = ?",
+                    (session['username'],))
+        user_id = cur.fetchone()
+        if request.method == "GET":
+            if sort == 'popular':
+                cur.execute('SELECT username, content, date, id, like_count FROM\
+                    Gratitude_idea WHERE is_public = 1 ORDER BY like_count DESC ')
+                idea_data = cur.fetchall()
+                cur.execute('SELECT post_id FROM Liked_Posts WHERE user = ?', user_id)
+                liked = cur.fetchall()
+                print(f"value is {liked}")
+                return render_template("public_posts.html", idea_data=idea_data, liked=liked)
+            elif sort == 'newest':
+                cur.execute('SELECT username, content, date, id, like_count FROM\
                  Gratitude_idea WHERE is_public = 1 ORDER BY date DESC ')
-            idea_data = cur.fetchall()
-            return render_template("public_posts.html", idea_data=idea_data)
-        else:
-            cur.execute('SELECT username, content, date, id, like_count FROM\
-                 Gratitude_idea WHERE is_public = 1 ORDER BY date ASC ')
-            idea_data = cur.fetchall()
-            return render_template("public_posts.html", idea_data=idea_data)
+                idea_data = cur.fetchall()
+                cur.execute('SELECT post_id FROM Liked_Posts WHERE user = ?', user_id)
+                liked = cur.fetchall()
+                print(f"value is {liked}")
+                return render_template("public_posts.html", idea_data=idea_data, liked=liked)
+            else:
+                cur.execute('SELECT username, content, date, id, like_count FROM\
+                    Gratitude_idea WHERE is_public = 1 ORDER BY date ASC ')
+                idea_data = cur.fetchall()
+                cur.execute('SELECT post_id FROM Liked_Posts WHERE user = ?', user_id)
+                liked = cur.fetchall()
+                print(f"value is {liked}")
+                return render_template("public_posts.html", idea_data=idea_data, liked=liked)
 
-    elif request.method == "POST":
-        sort = request.form['sort']
-        return redirect("public_posts")
+        elif request.method == "POST":
+            sort = request.form['sort']
+            return redirect("public_posts")
+        else:
+            return redirect("/")
     else:
-        return redirect("/")
+        flash('First please create an account or login to an existing one.')
+        return redirect('loginpage')
+
+   
 
 # Login page, user will input credentials to post content.
 
@@ -199,11 +218,9 @@ def like():
                                                    WHERE post_id = ?"
             cur.execute(select_count_query, (post_id,))
             count = cur.fetchone()
-            print(count)
             set_like = "UPDATE Gratitude_idea SET like_count = ? WHERE id = ?"
             cur.execute(set_like, (count[0], post_id))
             conn.commit()
-            print(post_id)
             return redirect("public_posts")
         else:
             # Unlikes a post, removes from table, updates like count
@@ -269,16 +286,13 @@ def create_account():
             session["username"] = request.form['username']
             first_login = False
             flash('You have created an account!, redirecting you to your page.')
-            print('logged in')
             return redirect("/my_posts")
         else:
             # Alerts the user that the username is already taken
             flash('Sorry, that username has been taken.')
-            print('taken')
             return redirect('/create_account_page')
     else:
         flash('Passwords do not match.')
-        print('pass dont match')
         return redirect('/create_account_page')
 
 
