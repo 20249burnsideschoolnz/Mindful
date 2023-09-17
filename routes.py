@@ -35,14 +35,13 @@ def db_query(query, is_single, is_insert, data):
     finally:
         conn.close()
 
-   
 
 @app.route('/')
 def home():
-    idea_data = db_query("SELECT username, content, date FROM Gratitude_idea ORDER BY\
-                 RANDOM() LIMIT 1", True, False, ())
-    idea_data1 = db_query("SELECT username, content, date FROM Gratitude_idea ORDER BY\
-                 RANDOM() LIMIT 1", True, False, ())
+    idea_data = db_query("SELECT username, content, date FROM Gratitude_idea\
+                          ORDER BY RANDOM() LIMIT 1", True, False, ())
+    idea_data1 = db_query("SELECT username, content, date FROM Gratitude_idea\
+    ORDER BY RANDOM() LIMIT 1", True, False, ())
     return render_template("home.html", idea_data=idea_data,
                            idea_data1=idea_data1)
 
@@ -53,8 +52,8 @@ def home():
 @app.route('/my_posts', methods=['GET'])
 def my_posts():
     if 'username' in session:
-        user_idea_data = db_query("SELECT * FROM Gratitude_idea WHERE username = ?\
-                         ORDER BY date DESC", False, False, (session['username'],))
+        user_idea_data = db_query("SELECT * FROM Gratitude_idea WHERE username\
+                = ? ORDER BY date DESC", False, False, (session['username'],))
         return render_template("my_posts.html", user_idea_data=user_idea_data)
     else:
         flash('First please create an account or login to an existing one.')
@@ -68,27 +67,42 @@ def public_posts():
     global sort
 
     if 'username' in session:
-        user_id = db_query("SELECT id FROM User WHERE username = ?", True, False, (session['username'],))
+        user_id = db_query("SELECT id FROM User WHERE username = ?", True,
+                           False, (session['username'],))
         if request.method == "GET":
             if sort == 'popular':
-                idea_data = db_query('SELECT username, content, date, id, like_count FROM\
-                    Gratitude_idea WHERE is_public = 1 ORDER BY like_count DESC', False, False, ())
-                liked_post = db_query('SELECT post_id FROM Liked_Posts WHERE user = ?', False, False, user_id)
+                idea_data = db_query('SELECT username, content, date, id,\
+                like_count FROM Gratitude_idea WHERE is_public = 1 ORDER BY\
+                like_count DESC', False, False, ())
+                liked_post = db_query('SELECT post_id FROM Liked_Posts WHERE\
+                user = ?', False, False, user_id)
                 liked_posts = [item[0] for item in liked_post]
-                return render_template("public_posts.html", idea_data=idea_data, liked_posts=liked_posts, user_id = user_id)
+                return render_template("public_posts.html",
+                                       idea_data=idea_data,
+                                       liked_posts=liked_posts,
+                                       user_id=user_id)
             elif sort == 'newest':
-                idea_data = db_query('SELECT username, content, date, id, like_count FROM\
-                    Gratitude_idea WHERE is_public = 1 ORDER BY date DESC', False, False, ())
-                liked_post = db_query('SELECT post_id FROM Liked_Posts WHERE user = ?', False, False, user_id)
+                idea_data = db_query('SELECT username, content, date, id,\
+                like_count FROM Gratitude_idea WHERE is_public = 1 ORDER BY\
+                date DESC', False, False, ())
+                liked_post = db_query('SELECT post_id FROM Liked_Posts WHERE\
+                user = ?', False, False, user_id)
                 liked_posts = [item[0] for item in liked_post]
-                return render_template("public_posts.html", idea_data=idea_data, liked_posts=liked_posts, user_id = user_id)
+                return render_template("public_posts.html",
+                                       idea_data=idea_data,
+                                       liked_posts=liked_posts,
+                                       user_id=user_id)
             else:
-                idea_data = db_query('SELECT username, content, date, id, like_count FROM\
-                    Gratitude_idea WHERE is_public = 1 ORDER BY date ASC', False, False, ())
-                liked_post = db_query('SELECT post_id FROM Liked_Posts WHERE user = ?', False, False, user_id)
+                idea_data = db_query('SELECT username, content, date, id,\
+                like_count FROM Gratitude_idea WHERE is_public = 1 ORDER BY\
+                date ASC', False, False, ())
+                liked_post = db_query('SELECT post_id FROM Liked_Posts WHERE\
+                user = ?', False, False, user_id)
                 liked_posts = [item[0] for item in liked_post]
-                return render_template("public_posts.html", idea_data=idea_data, liked_posts=liked_posts, user_id = user_id)
-
+                return render_template("public_posts.html",
+                                       idea_data=idea_data,
+                                       liked_posts=liked_posts,
+                                       user_id=user_id)
         elif request.method == "POST":
             sort = request.form['sort']
             return redirect("public_posts")
@@ -97,8 +111,6 @@ def public_posts():
     else:
         flash('First please create an account or login to an existing one.')
         return redirect('loginpage')
-
-   
 
 # Login page, user will input credentials to post content.
 
@@ -139,12 +151,14 @@ def adminlogin():
 # Get username from cookie, get date from ?, get content from the form
 # "create post" or "post_idea"
 
+
 @app.post('/post_idea')
 def post_idea():
     current_time = datetime.today().strftime('%d-%m-%Y')
     db_query('INSERT INTO Gratitude_idea (username, date, content, is_public)\
-            VALUES (?,?,?,?)', False, True, (session['username'], current_time,
-                      request.form['post_idea'], request.form['radio']))
+    VALUES (?,?,?,?)', False, True, (session['username'], current_time,
+                                     request.form['post_idea'],
+                                     request.form['radio']))
     return redirect("my_posts")
 
 
@@ -152,8 +166,10 @@ def post_idea():
 
 @app.post('/ban_user')
 def ban_user():
-    db_query("DELETE FROM User WHERE username = ?", False, True, (request.form['username'],))
-    db_query("DELETE FROM Gratitude_idea WHERE username = ?", False, True, (request.form['username'],))
+    db_query("DELETE FROM User WHERE username = ?", False, True,
+             (request.form['username'],))
+    db_query("DELETE FROM Gratitude_idea WHERE username = ?", False, True,
+             (request.form['username'],))
     return redirect("admin")
 
 
@@ -161,13 +177,15 @@ def ban_user():
 
 @app.post('/delete_my_post')
 def delete_my_post():
-    db_query("DELETE FROM Gratitude_idea WHERE id = ?", False, True, (request.form['post_id'],))
+    db_query("DELETE FROM Gratitude_idea WHERE id = ?", False, True,
+             (request.form['post_id'],))
     return redirect("my_posts")
 
 
 @app.post('/delete_their_post')
 def delete_their_post():
-    db_query("DELETE FROM Gratitude_idea WHERE id = ?", False, True, (request.form['post_id'],))
+    db_query("DELETE FROM Gratitude_idea WHERE id = ?", False, True,
+             (request.form['post_id'],))
     return redirect("admin")
 
 
@@ -176,28 +194,30 @@ def delete_their_post():
 @app.post('/like')
 def like():
     if 'username' in session:
-        user_id = db_query("SELECT id FROM User WHERE username = ?", True, False, (session['username'],))
+        user_id = db_query("SELECT id FROM User WHERE username = ?", True,
+                           False, (session['username'],))
         post_id = db_query("SELECT id FROM Liked_Posts WHERE post_id = ?\
-                                                        AND user = ?", True, False, (request.form['like'], user_id[0],))
+        AND user = ?", True, False, (request.form['like'], user_id[0],))
         if post_id is None:
-
             # Likes a post, inserts into table, updates like count
             db_query("INSERT INTO Liked_Posts (user, post_id) \
-                    VALUES (?,?)", False, True, (user_id[0], request.form['like'],))
+            VALUES (?,?)", False, True, (user_id[0], request.form['like'],))
             post_id = request.form['like']
             count = db_query("SELECT COUNT(id) FROM Liked_Posts\
-                                                   WHERE post_id = ?", True, False, (post_id,))
-            db_query("UPDATE Gratitude_idea SET like_count = ? WHERE id = ?", False, True, (count[0], post_id))
+            WHERE post_id = ?", True, False, (post_id,))
+            db_query("UPDATE Gratitude_idea SET like_count = ? WHERE id = ?",
+                     False, True, (count[0], post_id))
             return redirect("public_posts")
         else:
             # Unlikes a post, removes from table, updates like count
             db_query("DELETE FROM Liked_Posts WHERE post_id = ?\
-                                                                AND user = ?", False, True, (request.form['like'],
-                                              user_id[0],))
+            AND user = ?", False, True, (request.form['like'],
+                                         user_id[0],))
             post_id = request.form['like']
             count = db_query("SELECT COUNT(id) FROM Liked_Posts WHERE \
-                                                                post_id = ?", True, False, (post_id,))
-            db_query("UPDATE Gratitude_idea SET like_count = ? WHERE id = ?", False, True, (count[0], post_id))
+            post_id = ?", True, False, (post_id,))
+            db_query("UPDATE Gratitude_idea SET like_count = ? WHERE id = ?",
+                     False, True, (count[0], post_id))
             return redirect("public_posts")
     else:
         return redirect('loginpage')
@@ -210,7 +230,8 @@ def like():
 def login():
     global first_login
     results = db_query('SELECT username, password FROM User WHERE username = ?\
-                                                     AND password = ?', False, False, (request.form['username'], request.form['password']))
+    AND password = ?', False, False, (request.form['username'],
+                                      request.form['password']))
 
     # If username/password combination is not found within the database.
     if not results:
@@ -230,16 +251,19 @@ def login():
 def create_account():
     global first_login
     # Database will return a username if it exists
-    username = db_query('SELECT username FROM User WHERE username = ?', True, False, (request.form['username'],))
+    username = db_query('SELECT username FROM User WHERE username = ?', True,
+                        False, (request.form['username'],))
     if request.form['password'] == request.form['confirm_password']:
         # If it doesnt exist then it will insert it into the database and the
         # username session is filled.
         if username is None:
-            db_query('INSERT INTO User (username, password) VALUES (?,?)', False, True, (request.form['username'],
-                              request.form['password']))
+            db_query('INSERT INTO User (username, password) VALUES (?,?)',
+                     False, True, (request.form['username'],
+                                   request.form['password']))
             session["username"] = request.form['username']
             first_login = False
-            flash('You have created an account!, redirecting you to your page.')
+            flash('You have created an account!,\
+            redirecting you to your page.')
             return redirect("/my_posts")
         else:
             # Alerts the user that the username is already taken
