@@ -17,7 +17,7 @@ first_login = True
 # Home page, displays a mindful post from a user when loading the home page.
 
 
-def db_query(query, is_single=False, is_insert=False, data=None):
+def db_query(query, is_single, is_insert, data):
     conn = sqlite3.connect("mindful.db")
     try:
         cur = conn.cursor()
@@ -35,8 +35,16 @@ def db_query(query, is_single=False, is_insert=False, data=None):
     finally:
         conn.close()
 
+   
+
 @app.route('/')
 def home():
+    idea_data = db_query("SELECT username, content, date FROM Gratitude_idea ORDER BY\
+                 RANDOM() LIMIT 1", True, False, ())
+    idea_data1 = db_query("SELECT username, content, date FROM Gratitude_idea ORDER BY\
+                 RANDOM() LIMIT 1", True, False, ())
+    return render_template("home.html", idea_data=idea_data,
+                           idea_data1=idea_data1)
     cur.execute('SELECT username, content, date FROM Gratitude_idea ORDER BY\
                  RANDOM() LIMIT 1')
     idea_data = cur.fetchone()
@@ -73,31 +81,32 @@ def public_posts():
         cur.execute("SELECT id FROM User WHERE username = ?",
                     (session['username'],))
         user_id = cur.fetchone()
+        print(user_id)
         if request.method == "GET":
             if sort == 'popular':
                 cur.execute('SELECT username, content, date, id, like_count FROM\
                     Gratitude_idea WHERE is_public = 1 ORDER BY like_count DESC ')
                 idea_data = cur.fetchall()
                 cur.execute('SELECT post_id FROM Liked_Posts WHERE user = ?', user_id)
-                liked = cur.fetchall()
-                print(f"value is {liked}")
-                return render_template("public_posts.html", idea_data=idea_data, liked=liked)
+                liked_post = cur.fetchall()
+                liked_posts = [item[0] for item in liked_post]
+                return render_template("public_posts.html", idea_data=idea_data, liked_posts=liked_posts, user_id = user_id)
             elif sort == 'newest':
                 cur.execute('SELECT username, content, date, id, like_count FROM\
                  Gratitude_idea WHERE is_public = 1 ORDER BY date DESC ')
                 idea_data = cur.fetchall()
                 cur.execute('SELECT post_id FROM Liked_Posts WHERE user = ?', user_id)
-                liked = cur.fetchall()
-                print(f"value is {liked}")
-                return render_template("public_posts.html", idea_data=idea_data, liked=liked)
+                liked_post = cur.fetchall()
+                liked_posts = [item[0] for item in liked_post]
+                return render_template("public_posts.html", idea_data=idea_data, liked_posts=liked_posts, user_id = user_id)
             else:
                 cur.execute('SELECT username, content, date, id, like_count FROM\
                     Gratitude_idea WHERE is_public = 1 ORDER BY date ASC ')
                 idea_data = cur.fetchall()
                 cur.execute('SELECT post_id FROM Liked_Posts WHERE user = ?', user_id)
-                liked = cur.fetchall()
-                print(f"value is {liked}")
-                return render_template("public_posts.html", idea_data=idea_data, liked=liked)
+                liked_post = cur.fetchall()
+                liked_posts = [item[0] for item in liked_post]
+                return render_template("public_posts.html", idea_data=idea_data, liked_posts=liked_posts, user_id = user_id)
 
         elif request.method == "POST":
             sort = request.form['sort']
