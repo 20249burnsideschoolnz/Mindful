@@ -45,14 +45,6 @@ def home():
                  RANDOM() LIMIT 1", True, False, ())
     return render_template("home.html", idea_data=idea_data,
                            idea_data1=idea_data1)
-    cur.execute('SELECT username, content, date FROM Gratitude_idea ORDER BY\
-                 RANDOM() LIMIT 1')
-    idea_data = cur.fetchone()
-    cur.execute('SELECT username, content, date FROM Gratitude_idea ORDER BY\
-                 RANDOM() LIMIT 1')
-    idea_data1 = cur.fetchone()
-    return render_template("home.html", idea_data=idea_data,
-                           idea_data1=idea_data1)
 
 
 # My post page, if user is logged in, it will display all posts by the current
@@ -61,10 +53,8 @@ def home():
 @app.route('/my_posts', methods=['GET'])
 def my_posts():
     if 'username' in session:
-        sql = 'SELECT * FROM Gratitude_idea WHERE username = ?\
-                                            ORDER BY date DESC'
-        cur.execute(sql, (session['username'],))
-        user_idea_data = cur.fetchall()
+        user_idea_data = db_query("SELECT * FROM Gratitude_idea WHERE username = ?\
+                         ORDER BY date DESC", False, False, (session['username'],))
         return render_template("my_posts.html", user_idea_data=user_idea_data)
     else:
         flash('First please create an account or login to an existing one.')
@@ -78,33 +68,24 @@ def public_posts():
     global sort
 
     if 'username' in session:
-        cur.execute("SELECT id FROM User WHERE username = ?",
-                    (session['username'],))
-        user_id = cur.fetchone()
-        print(user_id)
+        user_id = db_query("SELECT id FROM User WHERE username = ?", True, False, (session['username'],))
         if request.method == "GET":
             if sort == 'popular':
-                cur.execute('SELECT username, content, date, id, like_count FROM\
-                    Gratitude_idea WHERE is_public = 1 ORDER BY like_count DESC ')
-                idea_data = cur.fetchall()
-                cur.execute('SELECT post_id FROM Liked_Posts WHERE user = ?', user_id)
-                liked_post = cur.fetchall()
+                idea_data = db_query('SELECT username, content, date, id, like_count FROM\
+                    Gratitude_idea WHERE is_public = 1 ORDER BY like_count DESC', False, False, ())
+                liked_post = db_query('SELECT post_id FROM Liked_Posts WHERE user = ?', False, False, user_id)
                 liked_posts = [item[0] for item in liked_post]
                 return render_template("public_posts.html", idea_data=idea_data, liked_posts=liked_posts, user_id = user_id)
             elif sort == 'newest':
-                cur.execute('SELECT username, content, date, id, like_count FROM\
-                 Gratitude_idea WHERE is_public = 1 ORDER BY date DESC ')
-                idea_data = cur.fetchall()
-                cur.execute('SELECT post_id FROM Liked_Posts WHERE user = ?', user_id)
-                liked_post = cur.fetchall()
+                idea_data = db_query('SELECT username, content, date, id, like_count FROM\
+                    Gratitude_idea WHERE is_public = 1 ORDER BY date DESC', False, False, ())
+                liked_post = db_query('SELECT post_id FROM Liked_Posts WHERE user = ?', False, False, user_id)
                 liked_posts = [item[0] for item in liked_post]
                 return render_template("public_posts.html", idea_data=idea_data, liked_posts=liked_posts, user_id = user_id)
             else:
-                cur.execute('SELECT username, content, date, id, like_count FROM\
-                    Gratitude_idea WHERE is_public = 1 ORDER BY date ASC ')
-                idea_data = cur.fetchall()
-                cur.execute('SELECT post_id FROM Liked_Posts WHERE user = ?', user_id)
-                liked_post = cur.fetchall()
+                idea_data = db_query('SELECT username, content, date, id, like_count FROM\
+                    Gratitude_idea WHERE is_public = 1 ORDER BY date ASC', False, False, ())
+                liked_post = db_query('SELECT post_id FROM Liked_Posts WHERE user = ?', False, False, user_id)
                 liked_posts = [item[0] for item in liked_post]
                 return render_template("public_posts.html", idea_data=idea_data, liked_posts=liked_posts, user_id = user_id)
 
@@ -137,11 +118,9 @@ def create_account_page():
 
 @app.route('/admin', methods=['GET', 'POST'])
 def admin():
-    cur.execute('SELECT username, content, date, id, like_count FROM\
-                 Gratitude_idea ORDER BY date DESC')
-    idea_data = cur.fetchall()
-    cur.execute('SELECT username FROM User')
-    username = cur.fetchall()
+    idea_data = db_query('SELECT username, content, date, id, like_count FROM\
+                 Gratitude_idea ORDER BY date DESC', False, False, ())
+    username = db_query('SELECT username FROM User', False, False, ())
     return render_template("admin.html", idea_data=idea_data,
                            username=username)
 
@@ -157,18 +136,15 @@ def adminlogin():
 
 # Allows users to insert posts into the database, requires their username,
 # current date and post content.
-
+# Get username from cookie, get date from ?, get content from the form
+# "create post" or "post_idea"
 
 @app.post('/post_idea')
 def post_idea():
-    sql = 'INSERT INTO Gratitude_idea (username, date, content, is_public)\
-            VALUES (?,?,?,?)'
     current_time = datetime.today().strftime('%d-%m-%Y')
-    # Get username from cookie, get date from ?, get content from the form
-    # "create post" or "post_idea"
-    cur.execute(sql, (session['username'], current_time,
+    db_query('INSERT INTO Gratitude_idea (username, date, content, is_public)\
+            VALUES (?,?,?,?)', False, True, (session['username'], current_time,
                       request.form['post_idea'], request.form['radio']))
-    conn.commit()
     return redirect("my_posts")
 
 
@@ -176,11 +152,8 @@ def post_idea():
 
 @app.post('/ban_user')
 def ban_user():
-    sql = "DELETE FROM User WHERE username = ?"
-    cur.execute(sql, (request.form['username'],))
-    sql = "DELETE FROM Gratitude_idea WHERE username = ?"
-    cur.execute(sql, (request.form['username'],))
-    conn.commit()
+    db_query("DELETE FROM User WHERE username = ?", False, True, (request.form['username'],))
+    db_query("DELETE FROM Gratitude_idea WHERE username = ?", False, True, (request.form['username'],))
     return redirect("admin")
 
 
@@ -188,17 +161,13 @@ def ban_user():
 
 @app.post('/delete_my_post')
 def delete_my_post():
-    sql = "DELETE FROM Gratitude_idea WHERE id = ?"
-    cur.execute(sql, (request.form['post_id'],))
-    conn.commit()
+    db_query("DELETE FROM Gratitude_idea WHERE id = ?", False, True, (request.form['post_id'],))
     return redirect("my_posts")
 
 
 @app.post('/delete_their_post')
 def delete_their_post():
-    sql = "DELETE FROM Gratitude_idea WHERE id = ?"
-    cur.execute(sql, (request.form['post_id'],))
-    conn.commit()
+    db_query("DELETE FROM Gratitude_idea WHERE id = ?", False, True, (request.form['post_id'],))
     return redirect("admin")
 
 
@@ -207,46 +176,29 @@ def delete_their_post():
 @app.post('/like')
 def like():
     if 'username' in session:
-        cur.execute("SELECT id FROM User WHERE username = ?",
-                    (session['username'],))
-        user_id = cur.fetchone()
-        liked_query = "SELECT id FROM Liked_Posts WHERE post_id = ?\
-                                                        AND user = ?"
-        cur.execute(liked_query, (request.form['like'], user_id[0],))
-        post_id = cur.fetchone()
-
+        user_id = db_query("SELECT id FROM User WHERE username = ?", True, False, (session['username'],))
+        post_id = db_query("SELECT id FROM Liked_Posts WHERE post_id = ?\
+                                                        AND user = ?", True, False, (request.form['like'], user_id[0],))
         if post_id is None:
 
             # Likes a post, inserts into table, updates like count
-
-            like_a_post_query = "INSERT INTO Liked_Posts (user, post_id) \
-                                                         VALUES (?,?)"
-            cur.execute(like_a_post_query, (user_id[0], request.form['like'],))
+            db_query("INSERT INTO Liked_Posts (user, post_id) \
+                    VALUES (?,?)", False, True, (user_id[0], request.form['like'],))
             post_id = request.form['like']
-            select_count_query = "SELECT COUNT(id) FROM Liked_Posts\
-                                                   WHERE post_id = ?"
-            cur.execute(select_count_query, (post_id,))
-            count = cur.fetchone()
-            set_like = "UPDATE Gratitude_idea SET like_count = ? WHERE id = ?"
-            cur.execute(set_like, (count[0], post_id))
-            conn.commit()
+            count = db_query("SELECT COUNT(id) FROM Liked_Posts\
+                                                   WHERE post_id = ?", True, False, (post_id,))
+            db_query("UPDATE Gratitude_idea SET like_count = ? WHERE id = ?", False, True, (count[0], post_id))
             return redirect("public_posts")
         else:
             # Unlikes a post, removes from table, updates like count
-            unlike_a_post_query = "DELETE FROM Liked_Posts WHERE post_id = ?\
-                                                                AND user = ?"
-            cur.execute(unlike_a_post_query, (request.form['like'],
+            db_query("DELETE FROM Liked_Posts WHERE post_id = ?\
+                                                                AND user = ?", False, True, (request.form['like'],
                                               user_id[0],))
             post_id = request.form['like']
-            select_count_query = "SELECT COUNT(id) FROM Liked_Posts WHERE \
-                                                                post_id = ?"
-            cur.execute(select_count_query, (post_id,))
-            count = cur.fetchone()
-            set_like = "UPDATE Gratitude_idea SET like_count = ? WHERE id = ?"
-            cur.execute(set_like, (count[0], post_id))
-            conn.commit()
+            count = db_query("SELECT COUNT(id) FROM Liked_Posts WHERE \
+                                                                post_id = ?", True, False, (post_id,))
+            db_query("UPDATE Gratitude_idea SET like_count = ? WHERE id = ?", False, True, (count[0], post_id))
             return redirect("public_posts")
-
     else:
         return redirect('loginpage')
 
@@ -257,10 +209,8 @@ def like():
 @app.post('/login')
 def login():
     global first_login
-    sql = 'SELECT username, password FROM User WHERE username = ?\
-                                                     AND password = ?'
-    cur.execute(sql, (request.form['username'], request.form['password']))
-    results = cur.fetchall()
+    results = db_query('SELECT username, password FROM User WHERE username = ?\
+                                                     AND password = ?', False, False, (request.form['username'], request.form['password']))
 
     # If username/password combination is not found within the database.
     if not results:
@@ -280,18 +230,13 @@ def login():
 def create_account():
     global first_login
     # Database will return a username if it exists
-    sql = 'SELECT username FROM User WHERE username = ?'
-    cur.execute(sql, (request.form['username'],))
-    username = cur.fetchone()
-
+    username = db_query('SELECT username FROM User WHERE username = ?', True, False, (request.form['username'],))
     if request.form['password'] == request.form['confirm_password']:
         # If it doesnt exist then it will insert it into the database and the
         # username session is filled.
         if username is None:
-            sql = 'INSERT INTO User (username, password) VALUES (?,?)'
-            cur.execute(sql, (request.form['username'],
+            db_query('INSERT INTO User (username, password) VALUES (?,?)', False, True, (request.form['username'],
                               request.form['password']))
-            conn.commit()
             session["username"] = request.form['username']
             first_login = False
             flash('You have created an account!, redirecting you to your page.')
