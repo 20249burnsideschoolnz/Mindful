@@ -3,13 +3,13 @@
 <br><br>       
 <form action="/create_account" method="post">
   <label for="username">Create a username</label>
-  <input class="input" type="username" name="username" required>
+  <input class="input" type="username" name="username" required minlength="4" maxlength="24" placeholder="My name is...">
   <br><br>
   <label for="password">Create a password</label>
-  <input class="input" type="password" name="password" required>
+  <input class="input" type="password" name="password" required minlength="8" placeholder="(Min 8 characters)">
   <br><br>
   <label for="password"> Confirm password </label>
-  <input class="input" type="password" name="confirm_password" required>
+  <input class="input" type="password" name="confirm_password" required minlength="8" placeholder="(Min 8 characters)">
   <br><br>
   <button class="button" type="submit" name="create_account" value="create_account">Create account</button>
 </form>
@@ -18,13 +18,4 @@
 <p>Did you want to login instead?</p>
 <a class="nav_element" href="/loginpage">Login</a>
 
-<br><br>
-{% with messages = get_flashed_messages() %}
-  {% if messages %}
-    {% for msg in messages %}
-      <p>{{ msg }}</p>
-    {% endfor %}
-  {% endif %}
-{% endwith %}        
-<br><br>   
 {% endblock %}

@@ -16,6 +16,7 @@
 </div>
 
 <body>
+    
     <header>
         {% include "header.html" %}
     </header>
@@ -26,8 +27,18 @@
         </div>        
 
         <div class="flex-element-posts-column">
+
+            {% with messages = get_flashed_messages() %}
+            {% if messages %}
+              {% for msg in messages %}
+                <p>{{ msg }}</p>
+                <br><br>
+              {% endfor %}
+            {% endif %}
+          {% endwith %} 
+
         {% block content %} 
-            
+
         {% endblock %}
         </div>
 
@@ -44,4 +55,4 @@
 
 </html>
 
-    
+

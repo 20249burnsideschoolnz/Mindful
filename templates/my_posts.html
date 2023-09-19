@@ -2,7 +2,7 @@
 {% block content %}
     <form action="/post_idea" method="post">
         <h2><label for="post_idea">Create a post</label></h2>
-        <textarea class="input" required name="post_idea" id="post_idea" cols="36" rows="6" maxlength="200"></textarea>
+        <textarea class="input" required name="post_idea" id="post_idea" cols="36" rows="6" minlength="20" maxlength="200" placeholder="Begin writing your thought here. (Max 200 Characters)"></textarea>
         <br><br>
         <label class="check_button">Public   
             <input type="radio" checked="checked" value="1" name="radio">

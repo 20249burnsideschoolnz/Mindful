@@ -166,6 +166,10 @@ def post_idea():
 
 @app.post('/ban_user')
 def ban_user():
+    user_id = db_query("SELECT id FROM User WHERE username = ?", True,
+                       False, (request.form['username'],))
+    db_query("DELETE FROM Liked_Posts WHERE user = ?", False, True,
+             (user_id))
     db_query("DELETE FROM User WHERE username = ?", False, True,
              (request.form['username'],))
     db_query("DELETE FROM Gratitude_idea WHERE username = ?", False, True,
@@ -262,8 +266,8 @@ def create_account():
                                    request.form['password']))
             session["username"] = request.form['username']
             first_login = False
-            flash('You have created an account!,\
-            redirecting you to your page.')
+            flash('You have created an account! \
+            Redirecting you to your page.')
             return redirect("/my_posts")
         else:
             # Alerts the user that the username is already taken
