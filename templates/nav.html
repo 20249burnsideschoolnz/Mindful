@@ -1,7 +1,6 @@
 <div id="nav">
         <a class="nav_element" href="/">Home</a>
-        <a class="nav_element" href="/my_posts">My Thoughts</a>
-        <a class="nav_element" href="/public_posts">Public thoughts</a>
+        
         {% if session.username == "admin" %}
         <!-- Admin -->
         <form action="/adminlogin" method="post">
@@ -13,6 +12,8 @@
                 </form> 
         {% elif session['username'] %}
         <!-- Logout -->
+        <a class="nav_element" href="/my_posts">My Thoughts</a>
+        <a class="nav_element" href="/public_posts">Public thoughts</a>
         <a id="username_nav" class="nav_element">Welcome back, {{ session.username }}! </a>
         <form action="/logout" method="post">
                 <button class="nav_button" id="logout"><a> Logout</a></button>

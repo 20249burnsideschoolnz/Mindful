@@ -168,6 +168,10 @@ def post_idea():
 def ban_user():
     user_id = db_query("SELECT id FROM User WHERE username = ?", True,
                        False, (request.form['username'],))
+    print(user_id)
+    if user_id is None:
+        flash("User does not exist.")
+        return redirect("admin")
     db_query("DELETE FROM Liked_Posts WHERE user = ?", False, True,
              (user_id))
     db_query("DELETE FROM User WHERE username = ?", False, True,
