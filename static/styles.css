@@ -122,7 +122,6 @@ label{
   border: none;
   padding: 0!important;
   font-size: medium;
-  /*optional*/
   font-family: sans-serif;
   text-decoration: underline;
   cursor: pointer;
@@ -152,8 +151,8 @@ label{
 }
 
 .check_button{
-    padding-left: 2%;
-    padding-right: 2%;
+    padding-left: 5%;
+    padding-right: 5%;
 }
 
 #admin{
@@ -180,7 +179,7 @@ label{
 }  
 
 .flex-element-image-column{
-    width: 30%;
+    width: 22%;
     padding-left: 12px;
     padding-right: 12px;
     

@@ -130,11 +130,22 @@ def create_account_page():
 
 @app.route('/admin', methods=['GET', 'POST'])
 def admin():
-    idea_data = db_query('SELECT username, content, date, id, like_count FROM\
-                 Gratitude_idea ORDER BY date DESC', False, False, ())
-    username = db_query('SELECT username FROM User', False, False, ())
-    return render_template("admin.html", idea_data=idea_data,
-                           username=username)
+    if 'username' in session:
+        if session['username'] == 'admin':
+            idea_data = db_query('SELECT username, content, date, id,\
+            like_count FROM Gratitude_idea ORDER BY date DESC',
+                                 False, False, ())
+            username = db_query('SELECT username FROM User', False, False, ())
+            return render_template("admin.html", idea_data=idea_data,
+                                   username=username)
+        else:
+            flash("Please login to the administrator account before attempting\
+                   to access the admin page.")
+            return redirect('loginpage')
+    else:
+        flash("Please login to the administrator account before attempting to\
+                access the admin page.")
+        return redirect('loginpage')
 
 # If user is logged in as admin, it will redirect them to the admin page.
 
@@ -252,6 +263,8 @@ def login():
     else:
         session["username"] = request.form['username']
         first_login = False
+        flash('Welcome back! \
+            Redirected you to your page.')
         return redirect('/my_posts')
 
 
@@ -271,7 +284,7 @@ def create_account():
             session["username"] = request.form['username']
             first_login = False
             flash('You have created an account! \
-            Redirecting you to your page.')
+            Redirected you to your page.')
             return redirect("/my_posts")
         else:
             # Alerts the user that the username is already taken
